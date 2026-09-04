@@ -1,36 +1,43 @@
-import { useState } from 'react';
-import { Link, Route, Routes, useLocation } from 'react-router-dom';
-import { ArrowRight, Award, BookOpen, CalendarDays, ChevronDown, GraduationCap, Menu, Users, X } from 'lucide-react';
+import { lazy, Suspense } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { Layout } from './components/layout/Layout';
+import { AppErrorBoundary } from './app/providers/AppErrorBoundary';
 
-const nav = [
-  ['/', 'Home'], ['/about', 'About'], ['/academics', 'Academics'], ['/faculty', 'Faculty'],
-  ['/admissions', 'Admissions'], ['/notices', 'Notices'], ['/events', 'Events'], ['/gallery', 'Gallery'], ['/contact', 'Contact']
-];
+const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+const { About, Academics, Admissions, Contact, Events, Faculty, Gallery, Notices } = {
+  About: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.About }))),
+  Academics: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Academics }))),
+  Admissions: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Admissions }))),
+  Contact: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Contact }))),
+  Events: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Events }))),
+  Faculty: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Faculty }))),
+  Gallery: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Gallery }))),
+  Notices: lazy(() => import('./pages/StandardPages').then(module => ({ default: module.Notices }))),
+};
 
-function Layout({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
-  return <>
-    <div className="topbar"><div>Welcome to MySchool — Inspiring minds, shaping futures.</div><div className="toplinks">📞 +91 1800 000 000 · ✉️ info@myschool.edu</div></div>
-    <header className="header"><Link to="/" className="brand" onClick={() => setOpen(false)}><span className="brandmark"><GraduationCap size={28}/></span><span><b>MySchool</b><small>Excellence in Education</small></span></Link>
-      <button className="menu" onClick={() => setOpen(!open)} aria-label="Menu">{open ? <X/> : <Menu/>}</button>
-      <nav className={open ? 'nav open' : 'nav'}>{nav.map(([path,label]) => <Link key={path} className={location.pathname===path ? 'active':''} to={path} onClick={() => setOpen(false)}>{label}</Link>)}<Link className="apply" to="/admissions" onClick={() => setOpen(false)}>Apply Now <ArrowRight size={16}/></Link></nav>
-    </header>{children}
-    <footer><div className="footergrid"><div><div className="brand footerbrand"><span className="brandmark"><GraduationCap size={28}/></span><span><b>MySchool</b><small>Excellence in Education</small></span></div><p>A welcoming school community where curiosity, character and confidence grow together.</p></div><div><h4>Explore</h4><Link to="/about">About School</Link><Link to="/academics">Academics</Link><Link to="/admissions">Admissions</Link></div><div><h4>Quick Links</h4><Link to="/notices">Notices</Link><Link to="/events">Events</Link><Link to="/gallery">Gallery</Link></div><div><h4>Contact</h4><p>123 Education Road<br/>Your City, India</p><p>+91 1800 000 000<br/>info@myschool.edu</p></div></div><div className="copyright">© {new Date().getFullYear()} MySchool. All rights reserved.</div></footer>
-  </>;
+function RouteFallback() {
+  return <main className="page"><div className="container content"><div className="notice"><div><h2>Loading page…</h2><p>Please wait while the page is prepared.</p></div></div></div></main>;
 }
 
-const Page = ({ title, intro, children }: {title:string; intro:string; children:React.ReactNode}) => <main className="page"><section className="pagehero"><div className="container"><span className="eyebrow">MySchool</span><h1>{title}</h1><p>{intro}</p></div></section><div className="container content">{children}</div></main>;
-const cards = [{icon:<BookOpen/>,title:'Strong Academics',text:'A balanced curriculum that builds knowledge, creativity and critical thinking.'},{icon:<Users/>,title:'Caring Community',text:'Dedicated teachers and a supportive environment where every child belongs.'},{icon:<Award/>,title:'Character & Values',text:'We nurture responsibility, confidence, kindness and leadership.'}];
-
-function Home(){return <main><section className="hero"><div className="herooverlay"><div className="container heroContent"><span className="eyebrow">LEARN · LEAD · INSPIRE</span><h1>Where every child<br/><em>finds their spark.</em></h1><p>A modern learning community committed to academic excellence, strong values and a lifelong love of learning.</p><div className="actions"><Link className="button primary" to="/admissions">Explore Admissions <ArrowRight size={18}/></Link><Link className="button ghost" to="/about">Discover MySchool</Link></div></div></div></section><section className="intro container"><div><span className="eyebrow">WELCOME TO MYSCHOOL</span><h2>Growing curious minds and confident hearts.</h2></div><p>At MySchool, education goes beyond textbooks. We create meaningful experiences that help students discover what they love, develop their strengths and prepare for a changing world.</p></section><section className="features"><div className="container featuregrid">{cards.map(c=><article className="feature" key={c.title}><div className="icon">{c.icon}</div><h3>{c.title}</h3><p>{c.text}</p></article>)}</div></section><section className="stats"><div className="container statgrid"><div><strong>25+</strong><span>Years of Excellence</span></div><div><strong>1,200+</strong><span>Students</span></div><div><strong>85+</strong><span>Dedicated Faculty</span></div><div><strong>100%</strong><span>Commitment to Growth</span></div></div></section><section className="container homebottom"><div><span className="eyebrow">LATEST</span><h2>What's happening at MySchool?</h2></div><div className="notice"><CalendarDays/><div><b>Admissions Open for the New Academic Session</b><p>Discover our programmes, campus and admission process.</p></div><Link to="/admissions"><ArrowRight/></Link></div></section></main>}
-function About(){return <Page title="About Our School" intro="A school built around learning, belonging and becoming."><div className="twocol"><div><h2>Our story</h2><p>MySchool is a student-centred learning community designed to help young people become thoughtful, capable and compassionate citizens.</p><p>Our approach combines academic rigour with sports, arts, technology and real-world learning. Every student is encouraged to ask questions, take initiative and learn from experience.</p></div><div className="quote">“Education is not just preparation for life. It is a part of life itself.”</div></div><h2>Vision & Mission</h2><div className="featuregrid">{cards.map(c=><article className="feature" key={c.title}>{c.icon}<h3>{c.title}</h3><p>{c.text}</p></article>)}</div></Page>}
-function Academics(){return <Page title="Academics" intro="Purposeful learning from early years through senior school."><div className="programs">{['Early Years','Primary School','Middle School','Senior School'].map((x,i)=><article key={x}><span>0{i+1}</span><h2>{x}</h2><p>Engaging, age-appropriate learning with strong foundations in languages, mathematics, science, humanities, arts and physical education.</p><ChevronDown/></article>)}</div></Page>}
-function Faculty(){return <Page title="Faculty & Staff" intro="Experienced educators who know every learner matters."><div className="facultygrid">{['Principal','Head of Academics','Primary Coordinator','Senior Faculty'].map((x,i)=><article className="person" key={x}><div className="avatar">{['P','H','P','S'][i]}</div><h3>{x}</h3><p>MySchool Education Team</p></article>)}</div></Page>}
-function Admissions(){return <Page title="Admissions" intro="Take the first step towards your child's MySchool journey."><div className="admission"><h2>Admission process</h2>{['Submit an enquiry','Visit the school and meet our team','Complete the application','Assessment & interaction','Admission confirmation'].map((x,i)=><div className="step" key={x}><b>{i+1}</b><span>{x}</span></div>)}<Link className="button primary" to="/contact">Start an Enquiry <ArrowRight size={18}/></Link></div></Page>}
-function Notices(){return <Page title="News & Notices" intro="Stay up to date with important school announcements."><div className="list">{['Admissions Open for New Academic Session','Parent Orientation Programme','Annual Sports Day — Registration Open','Mid-Term Assessment Schedule'].map((x,i)=><article key={x}><span>SEP {4-i}</span><div><h3>{x}</h3><p>Important information for students and parents. Please contact the school office for details.</p></div><ArrowRight/></article>)}</div></Page>}
-function Events(){return <Page title="Events" intro="Learning comes alive through experiences beyond the classroom."><div className="eventgrid">{['Annual Sports Day','Science & Innovation Fair','Cultural Festival','Parent–Teacher Meet'].map((x,i)=><article key={x}><div className="eventdate"><b>{12+i*7}</b><span>OCT</span></div><h3>{x}</h3><p>Campus · 9:00 AM onwards</p></article>)}</div></Page>}
-function Gallery(){return <Page title="Gallery" intro="A glimpse into everyday life at MySchool."><div className="gallery">{['Learning','Campus','Sports','Arts','Celebrations','Activities'].map((x,i)=><div className={'photo p'+i} key={x}><span>{x}</span></div>)}</div></Page>}
-function Contact(){return <Page title="Contact Us" intro="We'd love to hear from you."><div className="contactgrid"><div><h2>Get in touch</h2><p>123 Education Road<br/>Your City, India</p><p><b>Phone</b><br/>+91 1800 000 000</p><p><b>Email</b><br/>info@myschool.edu</p><p><b>Office Hours</b><br/>Monday–Saturday · 8:00 AM–4:00 PM</p></div><form onSubmit={e=>e.preventDefault()}><input placeholder="Parent / Student Name"/><input type="email" placeholder="Email Address"/><input placeholder="Phone Number"/><textarea rows={5} placeholder="How can we help?"/><button className="button primary">Send Enquiry <ArrowRight size={18}/></button></form></div></Page>}
-
-export default function App(){return <Layout><Routes><Route path="/" element={<Home/>}/><Route path="/about" element={<About/>}/><Route path="/academics" element={<Academics/>}/><Route path="/faculty" element={<Faculty/>}/><Route path="/admissions" element={<Admissions/>}/><Route path="/notices" element={<Notices/>}/><Route path="/events" element={<Events/>}/><Route path="/gallery" element={<Gallery/>}/><Route path="/contact" element={<Contact/>}/><Route path="*" element={<Home/>}/></Routes></Layout>}
+export default function App() {
+  return (
+    <AppErrorBoundary>
+      <Layout>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/academics" element={<Academics />} />
+            <Route path="/faculty" element={<Faculty />} />
+            <Route path="/admissions" element={<Admissions />} />
+            <Route path="/notices" element={<Notices />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+    </AppErrorBoundary>
+  );
+}
